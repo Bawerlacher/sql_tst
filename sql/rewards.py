@@ -488,8 +488,8 @@ class EntailmentClassifier3(object):
 
 
 class GPT2TopicReward(object):
-    WORDLISTS_BASE_DIR = "/home/yihan.wang/project/mk_sql/experiments/wordlists"
-    PPLM_INPUTS_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/pplm-inputs.txt"
+    WORDLISTS_BASE_DIR = "/workspace/soft-Q-learning-for-text-generation/experiments/wordlists"
+    PPLM_INPUTS_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/pplm-inputs.txt"
     TOPICS = ["legal", "politics", "computers", "space", "religion", "science", "military"]
 
     def __init__(
@@ -694,8 +694,8 @@ class GPT2TopicReward(object):
             mode=mode)
     
 class GPT2BLEUReward(object):
-    # WORDLISTS_BASE_DIR = "/home/yihan.wang/project/mk_sql/experiments/wordlists"
-    TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task-no-quotes.txt"
+    # WORDLISTS_BASE_DIR = "/workspace/soft-Q-learning-for-text-generation/experiments/wordlists"
+    TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task-no-quotes.txt"
     # TOPICS = ["legal", "politics", "computers", "space", "religion", "science", "military"]
 
     def __init__(
@@ -930,7 +930,7 @@ class GPT2BLEUReward(object):
             mode=mode)
     
 class GPT2BLEUNoInputReward(object):
-    TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task.txt"
+    TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task.txt"
 
     def __init__(
             self,
@@ -967,8 +967,6 @@ class GPT2BLEUNoInputReward(object):
         self._include_perplexity = include_perplexity
         # Do not set is to `True` during training, use it for debugging.
         self._return_intermediate_outputs = return_intermediate_outputs
-
-        self._log_write = open("./res_log.txt", "w", encoding='utf-8')
         
     def load_tst_templates(self) -> List[str]:
         with open(self.TST_TEMPLATES_FILE_NAME) as f: 
@@ -978,10 +976,10 @@ class GPT2BLEUNoInputReward(object):
     def _load_tst_inputs(self) -> Dict[Tuple[str], List[str]]: 
         tst_inputs = {}
         # tokenizer = self._generator.tokenizer
-        filepath_train_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.0"
-        filepath_train_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.1"
-        filepath_dev_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
-        filepath_dev_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
+        filepath_train_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.0"
+        filepath_train_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.1"
+        filepath_dev_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
+        filepath_dev_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
         
         with open(filepath_train_0) as f: 
             sentences_train_0 = [line.strip() for line in f]
@@ -1140,10 +1138,6 @@ class GPT2BLEUNoInputReward(object):
             rewards_log["generator_outputs"] = generator_outputs  # type: ignore
             # rewards_log["all_classifier_outputs"] = all_classifier_outputs  # type: ignore
 
-        for i, prompt in enumerate(prompts):    
-            self._log_write.write(f"{prompt} : {str(rewards_tensor.tolist()[i])} \n")
-        self._log_write.flush()
-
         if to_tensor is True:
             return rewards_tensor, rewards_log
         else:
@@ -1164,9 +1158,9 @@ class GPT2BLEUNoInputReward(object):
             mode=mode)
     
 class GPT2SentimentNoInputReward(object):
-    TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task.txt"
-    # TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task-no-source.txt"
-    TST_CLF_CONFIG = dict(model=("/home/yihan.wang/project/mk_sql/experiments/yelp_sentiment_classifier/"
+    TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task.txt"
+    # TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task-no-source.txt"
+    TST_CLF_CONFIG = dict(model=("/workspace/soft-Q-learning-for-text-generation/experiments/yelp_sentiment_classifier/"
                                  "results-bert-base/checkpoint-10410/"),
                           tokenizer='bert-base-uncased')
 
@@ -1222,10 +1216,10 @@ class GPT2SentimentNoInputReward(object):
     def _load_tst_inputs(self) -> Dict[Tuple[Any], List[str]]: 
         tst_inputs = {}
         # tokenizer = self._generator.tokenizer
-        filepath_train_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.0"
-        filepath_train_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.1"
-        filepath_dev_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
-        filepath_dev_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
+        filepath_train_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.0"
+        filepath_train_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.1"
+        filepath_dev_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
+        filepath_dev_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
         
         with open(filepath_train_0) as f: 
             sentences_train_0 = [line.strip() for line in f]
@@ -1418,9 +1412,9 @@ class GPT2SentimentNoInputReward(object):
             mode=mode)
     
 class GPT2SentimentBLEUNoInputReward(object):
-    TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task.txt"
-    # TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task-no-source.txt"
-    TST_CLF_CONFIG = dict(model=("/home/yihan.wang/project/mk_sql/experiments/yelp_sentiment_classifier/"
+    TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task.txt"
+    # TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task-no-source.txt"
+    TST_CLF_CONFIG = dict(model=("/workspace/soft-Q-learning-for-text-generation/experiments/yelp_sentiment_classifier/"
                                  "results-bert-base/checkpoint-10410/"),
                           tokenizer='bert-base-uncased')
 
@@ -1476,10 +1470,10 @@ class GPT2SentimentBLEUNoInputReward(object):
     def _load_tst_inputs(self) -> Dict[Tuple[Any], List[str]]: 
         tst_inputs = {}
         # tokenizer = self._generator.tokenizer
-        filepath_train_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.0"
-        filepath_train_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.1"
-        filepath_dev_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
-        filepath_dev_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
+        filepath_train_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.0"
+        filepath_train_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.1"
+        filepath_dev_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
+        filepath_dev_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
         
         with open(filepath_train_0) as f: 
             sentences_train_0 = [line.strip() for line in f]
@@ -1683,9 +1677,9 @@ class GPT2SentimentBLEUNoInputReward(object):
     
 from bert_score import BERTScorer
 class GPT2SentimentBERTScoreNoInputReward(object):
-    TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task.txt"
-    # TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task-no-source.txt"
-    TST_CLF_CONFIG = dict(model=("/home/yihan.wang/project/mk_sql/experiments/yelp_sentiment_classifier/"
+    TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task.txt"
+    # TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task-no-source.txt"
+    TST_CLF_CONFIG = dict(model=("/workspace/soft-Q-learning-for-text-generation/experiments/yelp_sentiment_classifier/"
                                  "results-bert-base/checkpoint-10410/"),
                           tokenizer='bert-base-uncased')
 
@@ -1741,10 +1735,10 @@ class GPT2SentimentBERTScoreNoInputReward(object):
     def _load_tst_inputs(self) -> Dict[Tuple[Any], List[str]]: 
         tst_inputs = {}
         # tokenizer = self._generator.tokenizer
-        filepath_train_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.0"
-        filepath_train_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.1"
-        filepath_dev_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
-        filepath_dev_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
+        filepath_train_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.0"
+        filepath_train_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.1"
+        filepath_dev_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
+        filepath_dev_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
         
         with open(filepath_train_0) as f: 
             sentences_train_0 = [line.strip() for line in f]
@@ -1954,15 +1948,15 @@ class GPT2SentimentBERTScoreNoInputReward(object):
             mode=mode)
     
 class GPT2BLEUSentimentReward(object):
-    TST_CLF_DIR = ("/home/yihan.wang/project/mk_sql/experiments/yelp_sentiment_classifier/"
+    TST_CLF_DIR = ("/workspace/soft-Q-learning-for-text-generation/experiments/yelp_sentiment_classifier/"
                    "results-bert-base/checkpoint-10410/")
     TST_CLF_MODELNAME = 'bert-base-uncased'
-    TST_TEMPLATES_FILE_NAME = "/home/yihan.wang/project/mk_sql/experiments/tst-templates-no-task.txt"
+    TST_TEMPLATES_FILE_NAME = "/workspace/soft-Q-learning-for-text-generation/experiments/tst-templates-no-task.txt"
     TST_TARGET_TO_LABEL_MAP = {'negative': 'LABEL_0', 'positive': 'LABEL_1'}
-#     TST_INPUTS_FILE_NAME_MAP = {('train', 'negative'): "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.0", 
-#                                 ('train', 'positive'): "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.1",
-#                                 ('infer', 'negative'): "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.0", 
-#                                 ('infer', 'positive'): "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.1"}
+#     TST_INPUTS_FILE_NAME_MAP = {('train', 'negative'): "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.0", 
+#                                 ('train', 'positive'): "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.1",
+#                                 ('infer', 'negative'): "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.0", 
+#                                 ('infer', 'positive'): "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.1"}
 
     def __init__(
             self,
@@ -2020,10 +2014,10 @@ class GPT2BLEUSentimentReward(object):
     def _load_tst_inputs(self) -> Dict[Tuple[str], List[str]]: 
         tst_inputs = {}
         # tokenizer = self._generator.tokenizer
-        filepath_train_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.0"
-        filepath_train_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.train.1"
-        filepath_dev_0 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
-        filepath_dev_1 = "/home/yihan.wang/project/mk_sql/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
+        filepath_train_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.0"
+        filepath_train_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.train.1"
+        filepath_dev_0 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.0"
+        filepath_dev_1 = "/workspace/soft-Q-learning-for-text-generation/data/yelp-gpt2-control-only/raw/sentiment.dev.1"
         
         with open(filepath_train_0) as f: 
             sentences_train_0 = [line.strip() for line in f]
