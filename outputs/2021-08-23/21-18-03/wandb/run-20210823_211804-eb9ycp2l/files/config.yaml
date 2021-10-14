@@ -1,0 +1,122 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.11.0
+    framework: huggingface
+    huggingface_version: 4.9.1
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.8.10
+    t:
+      1:
+      - 1
+      - 3
+      - 5
+      - 9
+      - 11
+      2:
+      - 1
+      - 3
+      - 5
+      - 9
+      - 11
+      4: 3.8.10
+      5: 0.11.0
+      6: 4.9.1
+      8:
+      - 5
+architecture:
+  desc: null
+  value: transformer_small
+base_checkpoint_path:
+  desc: null
+  value: null
+beam_width:
+  desc: null
+  value: 10
+checkpoint_path:
+  desc: null
+  value: null
+gradient_clipping:
+  desc: null
+  value: true
+hack_truncate_length_constant:
+  desc: null
+  value: null
+learning_rate:
+  desc: null
+  value: 0.001
+mix_strategy:
+  desc: null
+  value: mix
+num_batches_per_epoch:
+  desc: null
+  value: 100
+num_epochs:
+  desc: null
+  value: 501
+reward_name:
+  desc: null
+  value: gpt2-bleu-no-input
+reward_shaping:
+  desc: null
+  value: true
+reward_shaping_max:
+  desc: null
+  value: 50
+reward_shaping_min:
+  desc: null
+  value: -50
+save_dir:
+  desc: null
+  value: ./outputs
+save_frequency:
+  desc: null
+  value: 1
+sql_loss_coefficients:
+  desc: null
+  value: null
+sql_loss_impl:
+  desc: null
+  value: v2_v2r_v3_v3r
+sql_loss_margin_coefficient:
+  desc: null
+  value: null
+sql_loss_margin_constant:
+  desc: null
+  value: null
+target_learning_rate:
+  desc: null
+  value: 0.001
+target_sql_loss_impl:
+  desc: null
+  value: null
+target_sync_method:
+  desc: null
+  value: polyak
+target_sync_steps:
+  desc: null
+  value: null
+task_name:
+  desc: null
+  value: prompt_tst.yelp_reconstruct
+top_k:
+  desc: null
+  value: 50
+top_p:
+  desc: null
+  value: null
+training_mode:
+  desc: null
+  value: sql-onpolicy
+use_target_network:
+  desc: null
+  value: true
+warmup_num_epochs:
+  desc: null
+  value: null
+warmup_training_mode:
+  desc: null
+  value: null
