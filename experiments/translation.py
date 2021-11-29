@@ -20,6 +20,7 @@ import wandb
 import click
 import importlib
 import omegaconf
+import random
 import numpy as np
 import texar.torch as tx
 from copy import deepcopy
@@ -40,6 +41,14 @@ from sql.misc_utils import nested_detach_and_clone
 from configs.models import config_model_optimizer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 PREPROCESS_TARGET_TEXTS = False
+
+
+def set_random_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 
 def _modify_model_config(config: omegaconf.DictConfig) -> None:
@@ -114,6 +123,8 @@ def prepare_model(
         target_update_method=config.target_sync_method,
         target_learning_rate=config.target_learning_rate,
         reward_shaping=config.reward_shaping,
+        reward_old_min=config.reward_old_min,
+        reward_old_max=config.reward_old_max,
         reward_shaping_min=config.reward_shaping_min,
         reward_shaping_max=config.reward_shaping_max,
         sql_loss_coefficients=config.sql_loss_coefficients,
@@ -171,6 +182,7 @@ def prepare_train_ops(
 
 
 def main(config: omegaconf.DictConfig) -> None:
+    set_random_seed(2)
     print(click.style(omegaconf.OmegaConf.to_yaml(config), fg="red"))
     # Looks like a hack
     wandb.init(project="soft-Q-learning", config=eval(str(config)))

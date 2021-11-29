@@ -14,9 +14,7 @@ def load_models(device):
                 tokenizer=tokenizer,
                 model="distilgpt2",
                 device=device)
-    TST_CLF_CONFIG = dict(model=("/jupyter/prompt-generation/soft-Q-learning-for-text-generation/"
-                                     "experiments/yelp_sentiment_classifier/"
-                                     "results-bert-base/checkpoint-10410/"),
+    TST_CLF_CONFIG = dict(model="./yelp_sentiment_classifier/results-bert-base/checkpoint-10410",
                           tokenizer='bert-base-uncased')
     classifier = pipeline(
                 "sentiment-analysis",
@@ -80,6 +78,7 @@ def generate_and_select_output(input_sentence,
                                generator,
                                classifier,
                                perplexer,
+                               temperature=1.0,
                                num_return_sequences=NUM_RETURN_SEQUENCES): 
     formatted_prompt = add_input_prompt_to_template(input_sentence,
                                                     prompt_str, 
@@ -87,6 +86,7 @@ def generate_and_select_output(input_sentence,
     generator_outputs = generator([formatted_prompt],
                                   max_new_tokens=max_new_tokens,
                                   pad_token_id=50256,
+                                  temperature=temperature,
                                   num_return_sequences=num_return_sequences,
                                   # Only return generated text, without the prompt
                                   return_full_text=False)
@@ -163,13 +163,13 @@ def compute_nll_reward(sentences, perplexer):
 
 
 def load_yelp_test_data(sentiment): 
-    data = [line.strip() for line in open('/jupyter/prompt-generation/soft-Q-learning-for-text-generation'
+    data = [line.strip() for line in open('/home/yihan.wang/project/mk_sql'
                                           f'/data/yelp-gpt2-control-only/raw/sentiment.test.{sentiment}', 'r')]
     return data
 
 
 def load_yelp_dev_data(sentiment): 
-    data = [line.strip() for line in open('/jupyter/prompt-generation/soft-Q-learning-for-text-generation'
+    data = [line.strip() for line in open('/home/yihan.wang/project/mk_sql'
                                           f'/data/yelp-gpt2-control-only/raw/sentiment.dev.{sentiment}', 'r')]
     return data
     
@@ -234,7 +234,7 @@ def main(reward_name,
         results.append(max_output)
 
         df_results = pd.DataFrame(results)
-        df_results.to_csv('/jupyter/prompt-generation/soft-Q-learning-for-text-generation/experiments'
+        df_results.to_csv('/home/yihan.wang/project/mk_sql/experiments'
                           '/style_transfer_outputs/yelp'
                           f'/{reward_name}-{target_reward}-{target_label}-{dataset}-{max_iters}-{prompt_name}-{random_seed}-outputs.csv',
                           index=False)
