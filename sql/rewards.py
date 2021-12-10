@@ -1451,6 +1451,10 @@ class GPT2SentimentBLEUNoInputReward(object):
             tokenizer=self.TST_CLF_CONFIG['tokenizer'],
             device=0)
 
+        # MOD for roberta
+        # self.roberta_clf = pipeline("sentiment-analysis",model="siebert/sentiment-roberta-large-english")
+        # self._classifier = self.roberta_classifier
+
         self._max_length = max_length
         self._num_return_sequences_train = num_return_sequences_train
         self._num_return_sequences_infer = num_return_sequences_infer
@@ -1469,10 +1473,11 @@ class GPT2SentimentBLEUNoInputReward(object):
         self.temp_input_2 = "the mojitos are deliciously made with fresh fruit ."
         self.temp_input = self.temp_input_1
         self.sbert = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-        self.sample_size = 40
+        self.sample_size = 16
         self.temperature = 1.0
         self.sample_size_annealing = False
         self.temperature_annealing = False
+        self.val_sample_sizes = [1, 16, 64]
         ### Modification ends ###
 
         # Technically, adding perplexity-based reward will break
@@ -1491,6 +1496,16 @@ class GPT2SentimentBLEUNoInputReward(object):
         embs = self.sbert.encode(to_encode)
         cos_sim = lambda a,b : np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
         return [cos_sim(embs[0], emb) for emb in embs[1:]]
+
+    ### Mod for roberta sentiment classifier
+    def roberta_classifier(self, inputs, **kwargs):
+        res = self.roberta_clf(inputs, **kwargs)
+        for c in res:
+            if c["label"] == "POSITIVE":
+                c["label"] = "LABEL_1"
+            else:
+                c["label"] = "LABEL_0"
+        return res
 
     def load_tst_templates(self) -> List[str]:
         with open(self.TST_TEMPLATES_FILE_NAME) as f: 
@@ -1567,6 +1582,31 @@ class GPT2SentimentBLEUNoInputReward(object):
             self._tst_inputs_idx[(mode, label)] = idx
         
         return inputs
+
+
+    def evaluate_generated_texts(self,
+                            generated_text: List[str], 
+                            clf_model: Any, 
+                            recon_model: Any, 
+                            reference: str, 
+                            target: str):
+        classes = clf_model(generated_text, temperature=1.0, truncation = True)
+        correct = [(c['label'] == target) for c in classes]
+        probs = [(c['label'] == target) * c['score'] + 
+                    (c['label'] != target) * (1 - c['score']) for c in classes]
+        recon_scr = self.sbert_sim(reference.lower(), [g.lower() for g in generated_text])
+
+        reward_list = [(rs + sa) / 2 for rs, sa in zip(recon_scr, probs)]
+        sum_rewards = [(b + 1.05 * 100 * c) / (1 + 1) for b, c, p in zip(recon_scr, correct, probs)]
+        logs = [{
+                "ref_text": reference,
+                "gen_text": gt,
+                "target_label": target,
+                "score": (rs + sa) / 2, 
+                "recon": rs, 
+                "clf_acc": sa} for rs, sa, gt in zip(recon_scr, probs, generated_text)]
+        return sum_rewards, logs
+
 
     def forward(self, target_labels: List[str], prompts: List[str], to_tensor: bool, mode: str) -> Tuple[Union[List[float], FloatTensor], Dict[str, Any]]:
         if mode not in ["train", "infer"]:
@@ -1671,6 +1711,7 @@ class GPT2SentimentBLEUNoInputReward(object):
                 else:
                     sum_rewards = [(b + 1.05 * 100 * c) / (1 + 1) for b, c, p in zip(bleu_rewards, correct, probs)]
                     reward = torch.tensor(sum_rewards).float().max()
+                    #top_index = 0
                     top_index = sum_rewards.index(reward)
 
                 quantities_to_log["sum_reward"].append(reward)
@@ -1712,7 +1753,48 @@ class GPT2SentimentBLEUNoInputReward(object):
                 click.secho("Encountered an error, skipping ...", bg="red")
                 rewards.append(torch.tensor(0.).to(device))
 
+        # Record prompt performance at different sample size in validation time.
+        if mode == "infer":
+            for sample_size in self.val_sample_sizes:
+                val_gen_outputs: List[List[Dict[str, Any]]] = self._generator(
+                    formatted_prompts,
+                    max_new_tokens=input_length,
+                    pad_token_id=50256,
+                    num_return_sequences=sample_size,
+                    temperature=self.temperature,
+                    return_full_text=False)
+                
+                top_rewards = []
+                mean_rewards = []
+                for batch_index in range(len(prompts)):
+                    generated_texts = []
+                    for output in val_gen_outputs[batch_index]: 
+                        text = output["generated_text"]
+                        try: 
+                            end = text.index('"')
+                        except ValueError: 
+                            end = len(text)
+                        generated_texts.append(text[:end])
+                    sum_rewards, logs = self.evaluate_generated_texts(
+                        generated_texts,
+                        self._classifier,
+                        self.sbert,
+                        source_strings[batch_index],
+                        target_labels[batch_index]
+                        )
+                    top_reward = torch.tensor(sum_rewards).float().max()
+                    top_rewards.append(top_reward)
+                    mean_reward = torch.tensor(sum_rewards).float().mean()
+                    mean_rewards.append(mean_reward)
+                    quantities_to_log[f"{sample_size}_top_reward"].append(top_reward)
+                    quantities_to_log[f"{sample_size}_mean_reward"].append(mean_reward)
+                top_reward_var = torch.var(torch.tensor(top_rewards))
+                mean_reward_var = torch.var(torch.tensor(mean_rewards))
+                quantities_to_log[f"{sample_size}_top_reward_var"].append(top_reward_var)
+                quantities_to_log[f"{sample_size}_mean_reward_var"].append(mean_reward_var)
+
         rewards_tensor = torch.stack(rewards)
+        quantities_to_log["reward_var"].append(torch.var(torch.tensor(rewards)))
         rewards_log = dict(
             (reward_key, torch.stack(reward_vals, dim=0).mean())
             for reward_key, reward_vals in quantities_to_log.items())
@@ -1727,14 +1809,15 @@ class GPT2SentimentBLEUNoInputReward(object):
         # if self._counter % 1000 == 0 and self.sample_size > 16:
         #     self.sample_size = int(self.sample_size / 2)
 
-        # Piecewise Annealing with warmup
-        # if self._counter > 500 and self._counter % 30 == 0 and self.sample_size > 16:
-        #     self.sample_size = int(self.sample_size - 1)
+        # Piecewise Linear Annealing with warmup
+        if self.sample_size_annealing and self._counter > 500 and \
+             self._counter % 30 == 0 and self.sample_size > 16:
+            self.sample_size = int(self.sample_size - 1)
 
         # Cosine Annealing with warmup
-        if self.sample_size_annealing and self._counter > 500 and \
-            self.sample_size > 16:
-            self.sample_size = int(16 + 56 * (1 + cos(pi * ((self._counter - 500) / 5000))))
+        # if self.sample_size_annealing and self._counter > 500 and \
+        #     self.sample_size > 16:
+        #     self.sample_size = int(16 + 56 * (1 + cos(pi * ((self._counter - 500) / 5000))))
 
         if to_tensor is True:
             return rewards_tensor, rewards_log
