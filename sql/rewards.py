@@ -1468,10 +1468,15 @@ class GPT2SentimentBLEUNoInputReward(object):
         ### Modification starts ###
         self._warm_up_reward = False
         self._counter = 0
-        self.temp_input_0 = "they are all really friendly and the vets are knowledgable and patient ."
+        self.temp_input_0 = 'love the casual , beautiful , and cozy atmosphere .'
         self.temp_input_1 = "thank you for a five star service ."
-        self.temp_input_2 = "the mojitos are deliciously made with fresh fruit ."
-        self.temp_input = self.temp_input_1
+        self.temp_input_2 = 'great service , great beer and fantastic food ... .'
+        self.temp_input_3 = 'great atmosphere , private and romantic .'
+        self.temp_input_4 = 'had absolutely amazing service here !'
+        self.temp_input_5 = 'amazing service and delivery !'
+        self.temp_input_6 = 'their arrangements are gorgeous .'
+        self.temp_input = self.temp_input_0
+
         self.sbert = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
         self.sample_size = 16
         self.temperature = 1.0
